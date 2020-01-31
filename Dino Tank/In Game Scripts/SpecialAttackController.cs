@@ -21,7 +21,7 @@ using UnityEngine.UI;
 
 public class SpecialAttackController : MonoBehaviour, INetworkOwner 
 {
-
+    // Common attributes 
     [Header("Common Attributes")]
     public Image reloadImage;
     public bool specialHasFired = false;
