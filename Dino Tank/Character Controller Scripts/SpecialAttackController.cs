@@ -1,9 +1,17 @@
-﻿/////////////////////////////////////////////
-//Author: Dmitrii and Colton
-//Date: 20171111
-//
-//Purpose: Controls and sets all special attacks for each playable dinosuar
-/////////////////////////////////////////////
+﻿/*  
+    ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
+    ╔═════════════════════════════╡  DinoTank  ╞══════════════════════════════════════════════════════╗            
+    ║ Authors:  Rahul Yerramneedi                       Email:    yr020409@gmail.com                  ║
+    ╟─────────────────────────────────────────────────────────────────────────────────────────────────╢ 
+    ║ Purpose: This script is used as manager to control all the special attacks present in the game. ║
+    ║          It adds all the damamge aspects of it from the colliders to all the visual affects     ║
+    ║          animations as well.                                                                    ║
+    ╟─────────────────────────────────────────────────────────────────────────────────────────────────╢ 
+    ║ Usage: Script is added on to the special attack game object insdie the player tank gameobject   ║
+    ║        prefab with all its compnents intact.                                                    ║                             
+    ╚═════════════════════════════════════════════════════════════════════════════════════════════════╝
+    ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
+*/
 
 using System;
 using System.Collections;
@@ -14,9 +22,6 @@ using UnityEngine.UI;
 public class SpecialAttackController : MonoBehaviour, INetworkOwner 
 {
 
-    //[Header("Common Data")]
-    //public ParticleSystem chargeParticles;
-
     [Header("Common Attributes")]
     public Image reloadImage;
     public bool specialHasFired = false;
@@ -26,7 +31,7 @@ public class SpecialAttackController : MonoBehaviour, INetworkOwner
     public GameObject chargeParticles;
     public Transform chargeTrigger;
 
-    //Lunge setup
+    //Lunge attack setup
     [Header("Lunge")]
     public GameObject lungeRadius;
     public GameObject lungeEffect;
@@ -38,7 +43,7 @@ public class SpecialAttackController : MonoBehaviour, INetworkOwner
     public float lungeDamage;
     public float coolDownLunge;
 
-    //Stomp Setup
+    //Stomp attack Setup
     [Header("Stomp")]
     public GameObject stompTrigger;
     public Transform stopTriggerPosition;
@@ -55,7 +60,7 @@ public class SpecialAttackController : MonoBehaviour, INetworkOwner
     public float upwardModifier;
 
 
-    //Swipe Setup
+    //Swipe attack Setup
     [Header("Swipe")]
     public SphereCollider swipeRadiusCollider;
     public GameObject swipeEffect;
@@ -70,14 +75,12 @@ public class SpecialAttackController : MonoBehaviour, INetworkOwner
     public float swipeDamage;
     public float explosionForceSwipe;
 
-
-    //Bite Setup
+    //Bite attack Setup
     [Header("Bite")]
     public SphereCollider biteRadiusCollider;
     public GameObject biteEffect;
     public GameObject biteDamageEffect;
     public GameObject biteCharge;
-    //public Transform biteTrigger;
     public float coolDownBite;
     public float biteDamage;
     public float explosionForceBite;
@@ -85,7 +88,7 @@ public class SpecialAttackController : MonoBehaviour, INetworkOwner
     public GameObject BiteObj;
 
 
-    //Sonic Boom Setup
+    //Sonic Boom attack Setup
     [Header("Sonic Boom")]
     public SphereCollider sonicBoomRange;
     public GameObject sonicBoomEffect;
@@ -96,43 +99,39 @@ public class SpecialAttackController : MonoBehaviour, INetworkOwner
     public float sonicboomDamage;
     public float explosionForceSonicBoom;
 
-
-    //MISSING SONIC BOOM NEED TO ADD THIS
-
     LevelManager levelManagerRef;
-    RTCTankController controller; // OWNER 
+    RTCTankController controller;
     PhotonPlayer sender;
-    //  RTCTankGunController gunController;
     Rigidbody body;
     Animator animator;
 
+    // Attack timers
     private float timerStomp = 0;
     private float timerLunge = 0;
     private float timerSwipe = 0;
     private float timerBite = 0;
     private float timerSonicBoom = 0;
 
+    // Attack bools
     bool lunge = false;
     bool stomp = false;
     bool swipe = false;
     bool bite = false;
+    bool hitOnce = false;
     bool sonicboom = false;
+
+    // Variables
     float massBackup;
     float dragBckup;
     float angularDragBackup;
-    private bool hitOnce = false;
 
-    // Variables to manage the special attack button in UI
+    // Variables to manage the special attack button within UI
     Loadoutpanel loadoutPanel;
-
-    //public GameObject Tail;
-    //public Animator TailAnim;
-    //public Animator StompAnim;
 
     void Start()
     {
         hitOnce = false;
-        //Set references
+        //Setting references
         levelManagerRef = FindObjectOfType<LevelManager>();     
         controller = GetComponentInParent<RTCTankController>();
         body = controller.gameObject.GetComponent<Rigidbody>();
@@ -164,8 +163,9 @@ public class SpecialAttackController : MonoBehaviour, INetworkOwner
 
         //if animator exist, turn it off. Will enable in code when needed.
         if (animator)
+        {
             animator.enabled = false;
-        //Tail.SetActive(false);
+        }
 
         if(BiteObj)
         {
@@ -173,7 +173,6 @@ public class SpecialAttackController : MonoBehaviour, INetworkOwner
             BiteAnim.enabled = false;
         }
         
-        //StompObj.SetActive(false);
         if(StegoSwipe)
         {
             StegoSwipe.SetActive(false);
@@ -181,13 +180,13 @@ public class SpecialAttackController : MonoBehaviour, INetworkOwner
         
     }
 
-
+    // Charging the special attack
     public void ChargeSpecial()
     {
         //reloadImage.color = Color.yellow;
         reloadImage.fillClockwise = true;
 
-        switch(controller.currentDino)
+        switch(controller.currentDino) // will switch the special attack based on the player's current tank
         {
             case dino.Tricera:
                 chargeParticles = lungeCharge;
@@ -211,25 +210,20 @@ public class SpecialAttackController : MonoBehaviour, INetworkOwner
                 break;
         }
         
-
         if (specialTimer <= specialChargeTime)
         {
-            //Put charge particle on barrel
+            // Put charge particles on the barrel
             specialTimer += Time.deltaTime;
             reloadImage.fillAmount = (specialChargeTime - specialTimer) / specialChargeTime;
             if(chargeParticles)
             {
                 chargeParticles.SetActive(true);
-                //Instantiate(chargeParticles, chargeTrigger);
                 if(chargeParticles.GetComponentInChildren<Light>())
                 {
                     chargeParticles.GetComponentInChildren<Light>().intensity += specialTimer * 0.01f;
-                }
-                
+                }  
             }
-            
-        }
-       
+        } 
 
         else if (specialTimer > specialChargeTime)
         {
@@ -237,12 +231,12 @@ public class SpecialAttackController : MonoBehaviour, INetworkOwner
         }
     }
     
+    // Will reset the special attack once it has been used
     public void ResetSpecial()
     {
-        
         if (chargeParticles)
         {
-            if (chargeParticles.GetComponentInChildren<Light>())
+            if (chargeParticles.GetComponentInChildren<Light>()) // changing the particle effects while its resetting
             {
                 chargeParticles.GetComponentInChildren<Light>().intensity = 0f;
                 chargeParticles.GetComponentInChildren<Light>().color = Color.green;
@@ -253,56 +247,54 @@ public class SpecialAttackController : MonoBehaviour, INetworkOwner
         specialTimer = 0;
     }
 
+    // Special attack will be launched
     public void FireSpecial()
     {
-       // print("Special Fired!");
         ResetSpecial();
         loadoutPanel.SpecialAttackClicked();
-        //chargeParticles.SetActive(false);
     }
 
-    //Lunge Special - Triceratops
+    // Lunge Special Attack - Triceratops
     public void Lunge(Animator _dinoAnimator)           // Takes in an animator for the dino
     {
-        if (timerLunge >= coolDownLunge)                // if lunge timer is greater or equal to my lunge cool down
+        if (timerLunge >= coolDownLunge)                // if lunge timer is greater or equal to the lunge cool down
         {            
             body.mass = 1000;                            // body mass is now 1000          
             if (animator) animator.enabled = true;       // if i have an animator, enable it
             EnableInput(false);                          // and disable input
-            // GameObject effect = Instantiate(lungeEffect, transform);
             lunge = true;
-            _dinoAnimator.SetTrigger("SpecialAttack");                                      //Set my dino animator trigger named Special attack
-
+            _dinoAnimator.SetTrigger("SpecialAttack");   // Set the dino animator trigger to be named Special attack
             animator.SetInteger("Dinotype", (int)controller.thisTank);
-            if (animator) animator.SetTrigger("Lunge");                                     // damage triggered from animation 
+            if (animator) animator.SetTrigger("Lunge");  // Damage triggered from the animation 
             loadoutPanel.specialButton.GetComponent<Animator>().SetBool("IsReady", false);
             loadoutPanel.SetSpecialGreyOutBadge(controller.currentDino);
 			specialHasFired = true;
         }
     }
 
-    //Sonic Boom - Duckbill
-    public void SonicBoom(Animator _dinoAnimator) // Duckbill
+    // Sonic Boom Special Attack - Duckbill
+    public void SonicBoom(Animator _dinoAnimator) // Takes in an animator for the dino
     {
-        Debug.Log("SonicBoom");
-        //EnableInput(false);
-        if (timerSonicBoom >= coolDownSonicBoom)
+        if (timerSonicBoom >= coolDownSonicBoom) // if sonic boom timer is greater or equal to the sonic boom cool down
         {
             if (animator) animator.enabled = true;
             sonicboom = true;
             EnableInput(false);
-            _dinoAnimator.SetTrigger("SpecialAttack");
-            //animator.SetInteger("Dinotype", (int)controller.thisTank);
-            if (animator) animator.SetTrigger("SonicBoom");
+            _dinoAnimator.SetTrigger("SpecialAttack"); // Set the dino animator trigger to be named Special attack
+            if (animator)
+            {
+                animator.SetTrigger("SonicBoom"); // Set the dino animator trigger for Sonic Boom
+            }
             if (loadoutPanel.specialButtonAnimator)
+            {
                 loadoutPanel.specialButtonAnimator.SetBool("IsReady", false);
+            }
             loadoutPanel.SetSpecialGreyOutBadge(controller.currentDino);
             specialHasFired = true;
         }
     }
 
-
-    //Stomp Special -// Bronto // bronto 2 
+    // Stomp Special Attack - Bronto
     public void Stomp(Animator _dinoAnimator)            // Takes in an animator for the dino
     {
         if (timerStomp >= coolDownStomp)                // if stomp timer is greater or equal to my stomp cool down
@@ -316,14 +308,13 @@ public class SpecialAttackController : MonoBehaviour, INetworkOwner
             if (loadoutPanel.specialButtonAnimator)
                 loadoutPanel.specialButtonAnimator.SetBool("IsReady", false);
             loadoutPanel.SetSpecialGreyOutBadge(controller.currentDino);
-            //StartCoroutine(Shake.ShakeCamera(2f, severety.severe));
         }
     }
 
-    //Swipe Special - Stego// kentrosourus
-    public void Swipe(Animator _dinoAnimator)       // Takes in an animator for the dino
+    // Swipe Special Attack - Stego
+    public void Swipe(Animator _dinoAnimator)       
     {
-        if (timerSwipe >= coolDownSwipe)
+        if (timerSwipe >= coolDownSwipe)            // if swipe is greater or equal to my swipe cool down
         {
             if (animator) animator.enabled = true;
             swipe = true;
@@ -338,7 +329,7 @@ public class SpecialAttackController : MonoBehaviour, INetworkOwner
         }
     }    
 
-    //Bite Special -TRex
+    //Bite Special Attack -TRex
     public void Bite(Animator _dinoAnimator)
     {
         if (timerBite >= coolDownBite)
@@ -362,13 +353,13 @@ public class SpecialAttackController : MonoBehaviour, INetworkOwner
         if (!APP.IsReady)
             return;
 
-        // bounce out if this tank is AI 
+        // Bounce out if this tank is AI 
         if (controller.isAI )
             return;
   
         if (!loadoutPanel || !reloadImage) // nothing to update 
         {
-            loadoutPanel = FindObjectOfType<Loadoutpanel>();    //Find the loadout panel and if not null, refill image
+            loadoutPanel = FindObjectOfType<Loadoutpanel>();    // find the loadout panel and if not null, it will refill image
             if (loadoutPanel)
                 reloadImage = loadoutPanel.fillBarImage;
         }
@@ -377,7 +368,7 @@ public class SpecialAttackController : MonoBehaviour, INetworkOwner
             loadoutPanel.specialButton = loadoutPanel.transform.parent.Find("SpecialAttackBTN").GetComponent<Button>();      
         }
 
-        if (lunge)      //If lunge is true
+        if (lunge)  // If lunge is true
         {
             lunge = false;
             timerLunge = 0;
@@ -389,11 +380,11 @@ public class SpecialAttackController : MonoBehaviour, INetworkOwner
         else if(controller.currentDino == dino.Tricera)
         {
             timerLunge += Time.deltaTime;
-            if (timerLunge >= coolDownLunge) // restoring 
+            if (timerLunge >= coolDownLunge) // restoring the cool down
             {              
                 timerLunge = coolDownLunge;
                 reloadComplete = true;
-                if (reloadImage)
+                if (reloadImage) // will fill the cooldown bar with the appropriate color
                 {
                     reloadImage.fillAmount = coolDownLunge;
                     reloadImage.color = Color.green;
@@ -402,12 +393,13 @@ public class SpecialAttackController : MonoBehaviour, INetworkOwner
                 if (loadoutPanel.specialButton.isActiveAndEnabled)
                 {
                     if (loadoutPanel.specialButtonAnimator)
+                    {
                         loadoutPanel.specialButtonAnimator.SetBool("IsReady", true);
+                    }
                     loadoutPanel.SetSpecialAttackBadge(controller.currentDino);
 					specialHasFired = false;
 
                 }
-
             }
             else
             {
@@ -415,6 +407,8 @@ public class SpecialAttackController : MonoBehaviour, INetworkOwner
                 reloadImage.fillClockwise = true;
                 reloadImage.fillAmount = timerLunge / coolDownLunge;
             }
+
+            // Changing colors of the cooldown bar based on the fill amounts
             if (reloadImage.fillAmount >= 0.75)
             {
                 reloadImage.color = Color.green;
@@ -428,7 +422,6 @@ public class SpecialAttackController : MonoBehaviour, INetworkOwner
                 reloadImage.color = Color.red;
             }
         }
-
 
         //if swipe is true
         if (swipe)
@@ -455,7 +448,9 @@ public class SpecialAttackController : MonoBehaviour, INetworkOwner
                 if (loadoutPanel.specialButton.isActiveAndEnabled)
                 {
                     if (loadoutPanel.specialButtonAnimator)
+                    {
                         loadoutPanel.specialButtonAnimator.SetBool("IsReady", true);
+                    }
                     loadoutPanel.SetSpecialAttackBadge(controller.currentDino);
                     specialHasFired = false;
                 }
@@ -467,6 +462,7 @@ public class SpecialAttackController : MonoBehaviour, INetworkOwner
                 reloadImage.fillClockwise = true;
                 reloadImage.fillAmount = timerSwipe / coolDownSwipe;
             }
+
             if (reloadImage.fillAmount >= 0.75)
             {
                 reloadImage.color = Color.green;
@@ -480,7 +476,6 @@ public class SpecialAttackController : MonoBehaviour, INetworkOwner
                 reloadImage.color = Color.red;
             }
         }
-
 
         if (stomp)      //If stomp is true
         {
@@ -507,7 +502,9 @@ public class SpecialAttackController : MonoBehaviour, INetworkOwner
                 if (loadoutPanel.specialButton.isActiveAndEnabled)
                 {
                     if (loadoutPanel.specialButtonAnimator)
+                    {
                         loadoutPanel.specialButtonAnimator.SetBool("IsReady", true);
+                    }
                     loadoutPanel.SetSpecialAttackBadge(controller.currentDino);
                     specialHasFired = false;
                 }
@@ -561,12 +558,13 @@ public class SpecialAttackController : MonoBehaviour, INetworkOwner
                     if (loadoutPanel.specialButton.isActiveAndEnabled)
                     {
                         if (loadoutPanel.specialButtonAnimator)
+                        {
                             loadoutPanel.specialButtonAnimator.SetBool("IsReady", true);
+                        }
                         loadoutPanel.SetSpecialAttackBadge(controller.currentDino);
                         specialHasFired = false;
                     }
                 }
-
             }
             else
             {
@@ -622,7 +620,9 @@ public class SpecialAttackController : MonoBehaviour, INetworkOwner
                     if (loadoutPanel.specialButton.isActiveAndEnabled)
                     {
                         if (loadoutPanel.specialButtonAnimator)
+                        {
                             loadoutPanel.specialButtonAnimator.SetBool("IsReady", true);
+                        }
                         loadoutPanel.SetSpecialAttackBadge(controller.currentDino);
                         specialHasFired = false;
                     }
@@ -649,6 +649,7 @@ public class SpecialAttackController : MonoBehaviour, INetworkOwner
         }    
     }
 
+    // Used for triggering the Stomp animation
     public void StompAnimTrigger()
     {
         StopCoroutine("StopDamageAfterJump");
@@ -904,6 +905,7 @@ public class SpecialAttackController : MonoBehaviour, INetworkOwner
     }
     #endregion
 
+    // For the bite special attack effects
     IEnumerator BiteEffectFadeAndDelay(GameObject _effect)
     {
         if (_effect.GetComponentInChildren<SpriteRenderer>() != null)
@@ -916,22 +918,16 @@ public class SpecialAttackController : MonoBehaviour, INetworkOwner
 
             while (true)
             {
-                // col = fade.color;
                 col.a -= 0.02f;
                 spriteRendere.color = col;
-
                 yield return new WaitForSeconds(0.005f);
-
                 if (spriteRendere.color.a <= 0)
                 {
                     Destroy(_effect);
-
                     break;
                 }
             }
         }
-        
-
     }
 
 
@@ -944,7 +940,9 @@ public class SpecialAttackController : MonoBehaviour, INetworkOwner
             controller.photonView.RPC("PlayDinoGrowl", PhotonTargets.All, (int)controller.currentDino, transform.position);
         }
         else
-            AudioManager.PlayDinoGrowl(dino.Bronto,transform.position);
+        {
+            AudioManager.PlayDinoGrowl(dino.Bronto, transform.position);
+        }
          
       
         yield return new WaitForSeconds(stompEffectDelay);
@@ -952,14 +950,14 @@ public class SpecialAttackController : MonoBehaviour, INetworkOwner
         Collider[] colliders = Physics.OverlapSphere(transform.parent.position, stompRadius);
         foreach (Collider hit in colliders)
         {
-            // we we are not the player 
+            // we are not the player 
             if (hit.gameObject.transform.parent && hit.gameObject.transform.parent.gameObject != controller.gameObject && !hitOnce)
             {
                 // if we have a rigid body
                 if (hit && hit.GetComponent<Rigidbody>())
                 {
                     Rigidbody hitBody = hit.GetComponent<Rigidbody>();
-                     hitBody.mass /= 5;
+                    hitBody.mass /= 5;
                     hitBody.isKinematic = false;
                     hitBody.AddExplosionForce(explosionForce, transform.position, stompRadius, upwardModifier);
                     Instantiate(stompDamageEffect, hit.gameObject.transform.position, hit.gameObject.transform.rotation);
@@ -971,7 +969,6 @@ public class SpecialAttackController : MonoBehaviour, INetworkOwner
 
                     if (hitTank)
                     { 
-                        // TODO, addd interpolated damage amout
                         hitTank.TakeDamage(stompDamage, this.gameObject);
                         hitOnce = true;
                         if (ArcadeController.instance && ArcadeController.instance.hasTankDied)
@@ -989,6 +986,7 @@ public class SpecialAttackController : MonoBehaviour, INetworkOwner
         hitOnce = false;
     }
 
+    // Coroutine to carry out all the Bite Animation effects 
     IEnumerator BiteAnimation()
     {
         BiteObj.SetActive(true);
@@ -997,9 +995,9 @@ public class SpecialAttackController : MonoBehaviour, INetworkOwner
         yield return new WaitForSeconds(0.5f);
         BiteAnim.enabled = false;
         BiteObj.SetActive(false);
-        
     }
 
+    // Coroutine to carry out all the Lunge Animation effects 
     IEnumerator LungeAnimation()
     {
         LungeObj.SetActive(true);
@@ -1010,16 +1008,7 @@ public class SpecialAttackController : MonoBehaviour, INetworkOwner
         LungeNewAnim.enabled = false;
     }
 
-    //IEnumerator StompAnimation()
-    //{
-    //    StompObj.SetActive(true);
-    //    //StompAnim.Play("StompAnimation");
-    //    //yield return new WaitForSeconds(1);
-    //    //Instantiate(stompTrigger, stopTriggerPosition.position, stopTriggerPosition.rotation, transform.parent);
-    //    Instantiate(sonicBoomEffect, stompTriggerPosition.position, stompTriggerPosition.rotation, transform.parent);
-    //    StompObj.SetActive(false);
-    //}
-
+    // Coroutine to carry out all the Swipe Animation effects 
     IEnumerator StegoSwipeAnimation()
     {
         StegoSwipe.SetActive(true);
@@ -1030,9 +1019,7 @@ public class SpecialAttackController : MonoBehaviour, INetworkOwner
 
     void EnableInput(bool _enable)
     {
-        // controller.canControl = _enable;
         controller.enabled = _enable;
-       // controller.GetComponentInChildren<MeshCollider>().enabled = _enable;
         
         if(controller.GetComponentInChildren<RTCTankGunController>())
         controller.GetComponentInChildren<RTCTankGunController>().enabled = _enable;

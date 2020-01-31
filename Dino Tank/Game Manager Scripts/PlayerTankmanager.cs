@@ -19,19 +19,14 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
-public enum tank : int { AMX, B2, Churchill, KV2, M3,
-                         M6, Maus, Sherman, Tiger, T34,
-                        A7V, Elephant, Ratte}; 
+public enum tank : int { AMX, B2, Churchill, KV2, M3, M6, Maus, Sherman, Tiger, T34, A7V, Elephant, Ratte}; 
 public enum dino : int {None, Stego, Trex, Tricera, Bronto, Kentrosaurus, Duckbill, Croc };
 public enum resource : int { xp, amber, meteorite };
 public enum cameraModes : int { topDown, thirdPerson}
 
-
 public class PlayerTankmanager : SystemBase
 {
-    public string playerName;
-
-    //Added by Anthony
+    public string playerName; 
     public bool isArcade = false;
     public arcadeMode _ArcadeMode = arcadeMode.survival; // we only have one mode for arcade this is too redundent (Donald)
     public int levelChoice;

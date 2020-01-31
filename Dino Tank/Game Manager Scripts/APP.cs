@@ -1,35 +1,31 @@
-﻿/*╔═══════════════╡  DinoTank 2018 ╞═════════════════╗ 
-  ║ File   :  APP.cs                                 ║ 
-  ║ Authors: Dmitrii Roets  Email: roetsd@icloud.com ║
-  ╟──────────────────────────────────────────────────╢░
-  ║ Purpose: Boot Game, create systems               ║░
-  ║ Usage: This prefab should in the boot scene.     ║░
-  ╚══════════════════════════════════════════════════╝░
-     ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
+﻿/*  
+    ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
+    ╔═════════════════════════════╡  DinoTank  ╞══════════════════════════════════════════════════════╗            
+    ║ Authors:  Rahul Yerramneedi                       Email:    yr020409@gmail.com                  ║
+    ╟─────────────────────────────────────────────────────────────────────────────────────────────────╢ 
+    ║ Purpose: This script is used to boot up the game and launch all the main and sub-systems        ║
+    ║          present in the game.                                                                   ║
+    ╟─────────────────────────────────────────────────────────────────────────────────────────────────╢ 
+    ║ Usage: The APP prefab should have this script and it should be placed in the Booting scene.     ║                             
+    ╚═════════════════════════════════════════════════════════════════════════════════════════════════╝
+    ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 */
 
-//
 // NOTE: This system spawns the DebugMenu, for release remove the DEBUG_ENABLED define from Edit > Project Settings > Player > Other Settings > Scripting Define Symbols
-//
-
-#region Using Statements                                             
-
-// Engine
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-#endregion // using statements
 
 public class APP : Photon.PunBehaviour
 {
     // Instance
     private static APP Instance;
 
-    // public
-    [Header("Start game from beginning")]
-    public bool BootstrapGame = false; // Launch Game fresh
+    // Public
+    [Header("Start game from the beginning")]
+    public bool BootstrapGame = false; // Launch Game 
 
     [Header("Logging")]
     public bool OnScreenLog = true;
@@ -38,10 +34,10 @@ public class APP : Photon.PunBehaviour
     [Header("Stats")]
     public float GameClock;
 
-    //static
+    // Static
     public static float DeltaTime;
 
-    // private
+    // Private
     [SerializeField]
     List<SystemBase> Systems = new List<SystemBase>();
 
@@ -50,7 +46,7 @@ public class APP : Photon.PunBehaviour
  
     public static PlayerTankmanager PlayerTankManager;
     
-    // load progress
+    // Load progress of all states
     public enum LoadStates
     {
         Idle,
@@ -62,6 +58,7 @@ public class APP : Photon.PunBehaviour
         LoadingPlayer,
         Ready
     }
+
     public static LoadStates LoadState = LoadStates.Idle;
     public static bool DataLoaded = false;
 
@@ -95,10 +92,9 @@ public class APP : Photon.PunBehaviour
         }
     }
 
+    // App code and stability handling in here
     private void Update()
     {
-        // App code and stability handling in here
-
         // Safe game Update
         ControlledUpdate();
     }
@@ -123,6 +119,7 @@ public class APP : Photon.PunBehaviour
 
     private void Awake()
     {
+        // Making sure the build index is not 0 and BootstrapGame bool is true
         if (BootstrapGame && SceneManager.GetActiveScene().buildIndex != 0)
         {
             BootstrapGame = false;
@@ -138,20 +135,11 @@ public class APP : Photon.PunBehaviour
         }
 
         DontDestroyOnLoad(gameObject);
-        
         Initialize();
     }
 
     public void Initialize()
     {
-        //#if !UNITY_EDITOR
-        //    OnScreenLog = false;
-        //#endif
-
-#if DEBUG_ENABLED
-        DinoTankDebug.Create();
-#endif
-
         if (OnScreenLog)
         {
             GameObject DeugLog = Instantiate(Resources.Load("Managers/AppLog"), null) as GameObject;
@@ -261,24 +249,28 @@ public class APP : Photon.PunBehaviour
         SetLoadState(LoadStates.LoadingPlayer);
     }
 
+    // Loading the game's splash screen
     private void SplashScreenLoaded(Scene scene, LoadSceneMode mode)
     {
         SceneManager.sceneLoaded -= SplashScreenLoaded;       
         SetLoadState(LoadStates.LoadingData);
     }
 
+    // Loading the game's main menu
     private void MainMenuLoaded(Scene scene, LoadSceneMode mode)
     {
         SceneManager.sceneLoaded -= MainMenuLoaded;
         SetLoadState(LoadStates.Ready);
     }
 
+    // Loading the game's current scene
     private void ReloadCurrentScene(Scene scene, LoadSceneMode mode)
     {
         SceneManager.sceneLoaded -= ReloadCurrentScene;
         SetLoadState(LoadStates.StartingSystems);
     }
 
+    // Booting up the level manager
     private void StartLevelManager()
     {
         LevelManager levelManager = FindObjectOfType<LevelManager>();
@@ -310,7 +302,7 @@ public class APP : Photon.PunBehaviour
             return foundSystem.GetComponent<SystemBase>();
         }
 
-        // use reflection to get the prefab name
+        // Use reflection to get the prefab name
         Type systemType = typeof(T);
         if (systemType == null)
         {
@@ -406,6 +398,4 @@ public class APP : Photon.PunBehaviour
 
         SetLoadState(LoadStates.Connecting);
     }
-
-
 }

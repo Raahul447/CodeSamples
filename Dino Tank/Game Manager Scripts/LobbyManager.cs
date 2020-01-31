@@ -12,9 +12,7 @@ namespace Prototype.NetworkLobby
     public class LobbyManager : NetworkLobbyManager 
     {
         static short MsgKicked = MsgType.Highest + 1;
-
         static public LobbyManager s_Singleton;
-
 
         [Header("Unity UI Lobby")]
         [Tooltip("Time in second between all players ready & match start")]
@@ -32,7 +30,6 @@ namespace Prototype.NetworkLobby
         public GameObject addPlayerButton;
 
         protected RectTransform currentPanel;
-
         public Button backButton;
 
         public Text statusInfo;
