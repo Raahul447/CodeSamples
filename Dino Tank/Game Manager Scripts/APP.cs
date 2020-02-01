@@ -46,17 +46,17 @@ public class APP : Photon.PunBehaviour
  
     public static PlayerTankmanager PlayerTankManager;
     
-    // Load progress of all states
+    //  Contains all the loading states of the game
     public enum LoadStates
     {
-        Idle,
-        Starting,
-        LoadingData,
-        OpeningScene,
-        StartingSystems,
-        Connecting,
-        LoadingPlayer,
-        Ready
+        Idle, 
+        Starting, // State which loads the data for game to start
+        LoadingData, // State where the game will grab all the data for the game from the google sheets and also determine whether if ts offline mode
+        OpeningScene, // State which loads the first scene
+        StartingSystems, // State where all the subsytems like audio, unlock and event managers are initialized
+        Connecting, // State where the game will be connected to a neetwor
+        LoadingPlayer, // State in which the level and player tank manager is loaded 
+        Ready // State in basically which the APP is ready
     }
 
     public static LoadStates LoadState = LoadStates.Idle;
@@ -117,6 +117,7 @@ public class APP : Photon.PunBehaviour
         }
     }
 
+    // Initilizing the varibales and game states before the game starts
     private void Awake()
     {
         // Making sure the build index is not 0 and BootstrapGame bool is true
@@ -138,6 +139,8 @@ public class APP : Photon.PunBehaviour
         Initialize();
     }
 
+
+    // Is intializing for the systems and the logs
     public void Initialize()
     {
         if (OnScreenLog)
@@ -203,16 +206,11 @@ public class APP : Photon.PunBehaviour
                 SceneManager.sceneLoaded -= ReloadCurrentScene;
 
                 DEBUG.Log("Scene Loaded...", Warning_Types.Log);
-
-                //StartCoroutine(LoadUpObjectPool(OnExisting));
-                //WaitForSubsystem(CreateSubsystem<ObjectPool>(), OnExisting);
                 CreateSubsystem<ObjectPool>();
                 PlayerTankManager = CreateSubsystem<PlayerTankmanager>() as PlayerTankmanager;
                 CreateSubsystem<UnlockManager>();
                 CreateSubsystem<AudioManager>();
                 CreateSubsystem<EventManager>();      
-                //CreateSubsystem<GameSettings>();
-                
                 DEBUG.Log("Systems Started...", Warning_Types.Good);
                 SetLoadState(LoadStates.Connecting);
                 break;
@@ -281,6 +279,8 @@ public class APP : Photon.PunBehaviour
         }
     }
 
+
+    // Helps initialize a system when triggered
     SystemBase CreateSubsystem<T>() where T : SystemBase
     {
         T foundSystem = FindObjectOfType<T>();
@@ -326,11 +326,13 @@ public class APP : Photon.PunBehaviour
         return system.GetComponent<SystemBase>();
     }
 
+    // Holds the game's loading progress til the sub-system is intialized
     public static void WaitForSubsystem(Component instance, Action OnExisting)
     {
         Instance.StartCoroutine(Instance.SpinUpWaitRoutine(instance, OnExisting));
     }
 
+    // Holds the game's loading progress til a specific bool coniditon is met
     public static void WaitForCondition(Func<bool> predicate, Action OnMet)
     {
         Instance.StartCoroutine(Instance.SpinUpWaitCondition(predicate, OnMet));
@@ -354,48 +356,39 @@ public class APP : Photon.PunBehaviour
         yield return new WaitForSeconds(10f);
     }
 
+    // Coroutine that gathers objectPool
     IEnumerator LoadUpObjectPool(Action OnExisting)
     {
         SystemBase sb = CreateSubsystem<ObjectPool>();
         yield return new WaitWhile(() => sb != null);
         OnExisting.SafeInvoke();
-
         StartCoroutine(LoadUpPTM(OnExisting));
     }
 
+    // Coroutine that loads up the PlayerTankManager, as it necessary for the player to interact
     IEnumerator LoadUpPTM(Action OnExisting)
     {
         PlayerTankManager = CreateSubsystem<PlayerTankmanager>() as PlayerTankmanager;
         yield return new WaitWhile(() => PlayerTankManager != null);
         OnExisting.SafeInvoke();
-
         StartCoroutine(LoadUpUnlock(OnExisting));
     }
 
-    IEnumerator LoadUpUnlock(Action OnExisting)
-    {
-        SystemBase sb = CreateSubsystem<UnlockManager>();
-        yield return new WaitWhile(() => sb != null);
-        OnExisting.SafeInvoke();
-
-        StartCoroutine(LoadUpAudio(OnExisting));
-    }
-
+    // Coroutine that loads up the Audio Manager for all the in game audio
     IEnumerator LoadUpAudio(Action OnExisting)
     {
         SystemBase sb = CreateSubsystem<AudioManager>();
         yield return new WaitWhile(() => sb != null);
         OnExisting.SafeInvoke();
-
         StartCoroutine(LoadUpEvent(OnExisting));
     }
 
+    // Coroutine that loads up the Event Manager, that certain scripts use to carry out events
     IEnumerator LoadUpEvent(Action OnExisting)
     {
         SystemBase sb = CreateSubsystem<EventManager>();
         yield return new WaitWhile(() => sb != null);
         OnExisting.SafeInvoke();
-
         SetLoadState(LoadStates.Connecting);
     }
 }

@@ -33,12 +33,10 @@ public class UIManager : MonoBehaviour {
                 uiManager = FindObjectOfType(typeof(UIManager)) as UIManager;
                 if (!uiManager)
                 {
-                    // Debug.Log("Called to make UI");
                     GameObject manager = Instantiate(Resources.Load("Managers/UI", typeof(GameObject)) as GameObject);
                     if (manager)
                     {
                         uiManager = manager.GetComponentInChildren<UIManager>();
-                        //uiManager.Start();
                     }
                 }
 
@@ -53,7 +51,7 @@ public class UIManager : MonoBehaviour {
     private RTCTankController tankController;
     public RTCTankGunController tankGunController;
 
-    [Header("References")] // References from the ther objects/scripts
+    [Header("References")] // References from other objects/scripts
     public Slider healthSlider;
     public Text HealthSliderText;
     public Image healthSliderFillBar;
@@ -130,21 +128,22 @@ public class UIManager : MonoBehaviour {
 
     void Awake()
     {
-        playersListDM.SetActive(false); // on awake will set the playerListDM (UI element) inactive
-        playersListTDM.SetActive(false); // on awake will set the playerListTDM (UI element) inactive
+        playersListDM.SetActive(false); // On awake will set the playerListDM (UI element) inactive
+        playersListTDM.SetActive(false); // On awake will set the playerListTDM (UI element) inactive
     }
 
-    public void SetTarget(GameObject _target) // adding a new _target GameObject
+    // Adding a new _target GameObject
+    public void SetTarget(GameObject _target) 
     {
-        target = _target; // giving the same information as the target GameObject
+        target = _target; // Giving the same information as the target GameObject
         tankController = _target.GetComponent<RTCTankController>();
         tankGunController = _target.GetComponentInChildren<RTCTankGunController>();
     }
 
-    public void OnEnable() // always use this for events 
+    public void OnEnable() // Always use this for events 
     {
-        EventManager.StartListening("LevelObjectiveAchieved", ShowWinOverlay, this); // called from level manager
-        EventManager.StartListening("PlayerDies", ShowLossOverlay, this); // called from level manager
+        EventManager.StartListening("LevelObjectiveAchieved", ShowWinOverlay, this); // Called from level manager
+        EventManager.StartListening("PlayerDies", ShowLossOverlay, this); // Called from level manager
         EventManager.StartListening("LevelObjectiveFailed", ShowLossOverlay, this);
         EventManager.StartListening("PlayerRespawned", PlayerRespawned, this);
         EventManager.StartListening("SwapJoystick", SwapJoystick, this);
@@ -160,11 +159,11 @@ public class UIManager : MonoBehaviour {
 
     void OnDisable() 
     {
-        EventManager.StopListening("LevelObjectiveAchieved", ShowWinOverlay);// called from level manager
-        EventManager.StopListening("PlayerDies", ShowLossOverlay); // called from level manager
+        EventManager.StopListening("LevelObjectiveAchieved", ShowWinOverlay);// Called from level manager
+        EventManager.StopListening("PlayerDies", ShowLossOverlay); // Called from level manager
         EventManager.StopListening("LevelObjectiveFailed", ShowLossOverlay);
         EventManager.StopListening("PlayerRespawned", PlayerRespawned);
-        EventManager.StopListening("SwapJoystick", SwapJoystick); // called from networkController
+        EventManager.StopListening("SwapJoystick", SwapJoystick); // Called from networkController
         EventManager.StopListening("BackSreen", BlackScreen);
         EventManager.StopListening("UnBackSreen", UnBlackScreen);
         EventManager.StopListening("SkipUIEvent", SkipButtonPressed);
@@ -174,8 +173,8 @@ public class UIManager : MonoBehaviour {
         EventManager.StopListening("HideViewSlit", UnViewSlit);
     }
 
-
-    IEnumerator WaitForPTMToSpawn() // Coroutine for Player Tank Manager to spawn and start functioning
+    // Coroutine for Player Tank Manager to spawn and start functioning
+    IEnumerator WaitForPTMToSpawn() 
     {
         yield return new WaitUntil(() => APP.PlayerTankManager != null);
         Start();
@@ -218,7 +217,7 @@ public class UIManager : MonoBehaviour {
 
         if (!tankController)
         {
-            StartCoroutine("WaitForFontroller");
+            StartCoroutine("WaitForController");
         }
 
         // Cursor Related 
@@ -256,7 +255,7 @@ public class UIManager : MonoBehaviour {
         }
     }
 
-    IEnumerator WaitForFontroller()
+    IEnumerator WaitForController()
     {
         tankController = target.GetComponent<RTCTankController>();
         yield return new WaitWhile(() => !tankController);
@@ -325,27 +324,31 @@ public class UIManager : MonoBehaviour {
         }
     }
 
-    void BlackScreen() // Used for the fading effect
+    // Used for the fading effect
+    void BlackScreen() 
     {
         blackFade.SetActive(true);
     }
 
-    void UnBlackScreen() // Used for the fading effect
+    // Used for the fading effect
+    void UnBlackScreen() 
     {
         blackFade.SetActive(false);
     }
 
-    void ViewSlit() // displaying the scope slit
+    // Displaying the scope slit
+    void ViewSlit() 
     {
        viewSlit.SetActive(true);
     }
 
-    void UnViewSlit() // displaying the scope slit
+    // Displaying the scope slit
+    void UnViewSlit()
     {
         viewSlit.SetActive(false);
     }
 
-    void ShowWinOverlay()  // registered by level manager 
+    void ShowWinOverlay()  // Registered by level manager 
     {
         StartCoroutine("ObjectieComplete");
     }
@@ -358,15 +361,17 @@ public class UIManager : MonoBehaviour {
     void PlayerRespawned()
     {
         lose.GetComponent<Canvas>().enabled = false;
-    }  
+    }
 
+    // Show the timer (numerical)
     public void ShowTimerDisplay(float _time)
     {
         bigTextDisplayGo.SetActive(_time > 0);
         TextDisplayText.text = ConverTimeToMinutesSeconds(_time);
-    } // show the timer (numerical)
+    }
 
-    public void ShowTimerDisplay(string _message) // show the timer (text)
+    // Show the timer (text)
+    public void ShowTimerDisplay(string _message) 
     {
         bigTextDisplayGo.SetActive(true);
         TextDisplayText.text = _message;
@@ -390,8 +395,7 @@ public class UIManager : MonoBehaviour {
         PlayerTankmanager.GetPlayer().GetComponent<RTCTankController>().gasInput = 0;
         PlayerTankmanager.GetPlayer().GetComponent<RTCTankController>().steerInput = 0;
 
-        //yield return new WaitForSeconds(3);
-
+        // Chekcing if the current game mode is arcade and the based on that get all the details and info required for this mode, from scores to all the stats
         if (APP.PlayerTankManager.isArcade)
         {
             Cursor.lockState = CursorLockMode.None;
@@ -410,7 +414,6 @@ public class UIManager : MonoBehaviour {
             GameObject.Find("ArcadeLives").SetActive(false);
             if(GameObject.Find("ScoreName"))
             GameObject.Find("ScoreName").SetActive(false);
-           // ArcadeController.instance.playerListEntry.SetActive(false);
             ArcadeController.instance.waveText.SetActive(false);
             win.transform.GetChild(4).GetComponent<Text>().text = "Round Complete";
             statsPanel.SetActive(true);
@@ -463,10 +466,10 @@ public class UIManager : MonoBehaviour {
         claimReward = true;
     }
 
+    // Coroutine that basically checks which mode is being played and after its completed it will either restart it or quit
     IEnumerator WaitAndRestartLevel()
     {
-         yield return new WaitForSeconds(1);  // seconds to pause before the level is restarted
-
+        yield return new WaitForSeconds(1);  // seconds to pause before the level is restarted
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
 
@@ -483,7 +486,9 @@ public class UIManager : MonoBehaviour {
             ArcadeController.instance.reviveText.enabled = false;
             ArcadeController.instance.waveText.gameObject.SetActive(false);
             if (APP.PlayerTankManager._ArcadeMode == arcadeMode.defend)
+            {
                 ArcadeController.instance.towerHealth.gameObject.SetActive(false);
+            }
             if (APP.PlayerTankManager._ArcadeMode == arcadeMode.SearchAndDestroy)
             {
                 statsPanel.SetActive(true);
@@ -502,6 +507,7 @@ public class UIManager : MonoBehaviour {
                     lose.transform.GetChild(5).GetComponent<Text>().text = "Blue Team Wins";
                     ArcadeController.instance.arcadeButton.gameObject.SetActive(true);
                     ArcadeController.instance.retryButton.gameObject.SetActive(true);
+                    DEBUG.Log("Blue team won");
                 }
                 ArcadeController.instance.UpdateRounds();
             }
@@ -513,9 +519,9 @@ public class UIManager : MonoBehaviour {
         }
         else
             lose.GetComponent<Canvas>().enabled = true;
-
     }
 
+    // For the player to try the level again, if defeated
     public void TryAgain()
     {
         switch (levelManagerRef.levelMode)
@@ -528,7 +534,7 @@ public class UIManager : MonoBehaviour {
                    SceneManager.LoadScene(SceneManager.GetActiveScene().name);
                    break;
         }        
-    } // For the player to try the level again, if defeated
+    } 
 
     public void ShowHideUI(bool _show)
     {
@@ -554,14 +560,15 @@ public class UIManager : MonoBehaviour {
         }
     }
 
-    public void StartDMScorePanel(int _neededToWin) // Start displaying the score board for the death match mode 
+    // Start displaying the score board for the death match mode 
+    public void StartDMScorePanel(int _neededToWin) 
     {
-        //  Debug.Log("Enabling Canvas");
         mp_teamsTotal.text = "First to " + _neededToWin.ToString() + " Kills Wins";       
         StartCoroutine("UpdateDMscore");
     }
 
-    public void StartTDMScorePanel(int _neededToWin) // Start displaying the score board for the team death match mode
+    // Start displaying the score board for the team death match mode
+    public void StartTDMScorePanel(int _neededToWin) 
     {
         playersListTDM.SetActive(true);
         mp_teamsTotal.text = "First to " + _neededToWin.ToString() + " Kills Wins";
@@ -569,7 +576,8 @@ public class UIManager : MonoBehaviour {
         playersListTDM.GetComponent<MaintainPlayerList>().gameMode = gamemodeNetwork.teamDeathmatch;
     }
 
-    IEnumerator UpdateDMscore() // Coroutine that is being used to update the score of the death match mode
+    // Coroutine that is being used to update the score of the death match mode
+    IEnumerator UpdateDMscore() 
     {
         playersListDM.SetActive(true);
         playersListDM.GetComponent<MaintainPlayerList>().gameMode = gamemodeNetwork.deathMatch;
@@ -592,7 +600,8 @@ public class UIManager : MonoBehaviour {
         }
     }
 
-    IEnumerator UpdateTDMScore() // Coroutine that is being used to update the score of the death match mode
+    // Coroutine that is being used to update the score of the death match mode
+    IEnumerator UpdateTDMScore() 
     {
         playersListTDM.SetActive(true);
         playersListTDM.GetComponent<MaintainPlayerList>().gameMode = gamemodeNetwork.teamDeathmatch;
@@ -648,7 +657,6 @@ public class UIManager : MonoBehaviour {
     // Controls the damage being faded by an animator
     public void ShowDamageFade(severety _severety)
     {
-       // Debug.Log("Damage " + _severety.ToString());
         Animator animator = damageFade.GetComponent<Animator>();
         animator.ResetTrigger(_severety.ToString());
         animator.SetTrigger(_severety.ToString());
@@ -668,6 +676,7 @@ public class UIManager : MonoBehaviour {
         {
             modelRepresentation.gameObject.SetActive(true);
         }
+        DEBUG.Log("Scope is activated");
     }
 
     void HideScopeFade()
@@ -681,6 +690,7 @@ public class UIManager : MonoBehaviour {
         {
             modelRepresentation.gameObject.SetActive(false);
         }
+        DEBUG.Log("Scope has been hidden");
     }
 
     // Used to Show the epty fuel 
@@ -714,6 +724,7 @@ public class UIManager : MonoBehaviour {
             badgeScriptRef.qtyText.text = APP.PlayerTankManager.GetWeaponQuantity(APP.PlayerTankManager.m_loadout[tankGunController.selectedWeaponIndex].gameObject.name).ToString();
 
         }
+        DEBUG.Log("Weapon has been swapped");
     }
 
     // Variables for the collectibles 
@@ -760,6 +771,6 @@ public class UIManager : MonoBehaviour {
     public void ShowBriefingScreen()
     {
         briefingScreen.SetActive(true);
-
+        DEBUG.Log("Briefing screen has been activated");
     }
 }

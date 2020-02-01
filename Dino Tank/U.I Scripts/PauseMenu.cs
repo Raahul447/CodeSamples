@@ -47,7 +47,7 @@ public class PauseMenu : SystemBase
 
     public override void Start()
     {
-        //Initialize();
+        Initialize();
     }
 
     // Use this for initialization
@@ -104,7 +104,7 @@ public class PauseMenu : SystemBase
         EventManager.StartListening("LevelObjectiveAchieved", GameWon, this);
         EventManager.StartListening("ShowSettings", HideBackButton, this);
         EventManager.StartListening("HideSettings", ShowBackButton, this);
-
+        DEBUG.Log("Pause Menu Acitvated");
     }
     void OnDisable()  
     {
@@ -113,6 +113,7 @@ public class PauseMenu : SystemBase
         EventManager.StopListening("LevelObjectiveAchieved", GameWon);
         EventManager.StopListening("ShowSettings", HideBackButton);
         EventManager.StopListening("HideSettings", ShowBackButton);
+        DEBUG.Log("Pause Menu De-Activated");
     }
 
     void OnDestroy()
@@ -120,44 +121,42 @@ public class PauseMenu : SystemBase
         Time.timeScale = 1;
     }
 
-   	public void PauseButton () 
+
+    // Function that trigger all the pause menu and its components and also for network mode capabilities
+    public void PauseButton () 
     {
         Cursor.visible = true;
         Cursor.lockState = CursorLockMode.None;
-
         EventManager.TriggerEvent("GamePaused");
-
         GetComponent<Canvas>().enabled = true;
 
+        if (PhotonNetwork.connectionStateDetailed != ClientState.Joined)
+        {
+            Time.timeScale = 0;
+            myCanvas.enabled = true;
 
-            if (PhotonNetwork.connectionStateDetailed != ClientState.Joined)
+            if (GameObject.Find("AudioSource"))
             {
-                Time.timeScale = 0;
-                myCanvas.enabled = true;
+                GameObject.Find("AudioSource").GetComponent<AudioSource>().volume = 0.2f;
+            }   
+            restartMissionButtonRef.SetActive(true);
+            leaveMissionButtonRef.GetComponentInChildren<Text>().text = "Level Select";
+        }
+        // We are in network mode
+        else
+        {
 
-                if (GameObject.Find("AudioSource"))
-                {
-                    GameObject.Find("AudioSource").GetComponent<AudioSource>().volume = 0.2f;
-                }
-                    
-                restartMissionButtonRef.SetActive(true);
-                leaveMissionButtonRef.GetComponentInChildren<Text>().text = "Level Select";
-            } 
-            else // we are in network mode
+            myCanvas.enabled = true;
+            if (GameObject.Find("AudioSource"))
             {
-
-                myCanvas.enabled = true;
-                if (GameObject.Find("AudioSource"))
-                {
-                    GameObject.Find("AudioSource").GetComponent<AudioSource>().volume = 0.2f;
-                }        
-
-                restartMissionButtonRef.SetActive(false);
-                leaveMissionButtonRef.GetComponentInChildren<Text>().text = "Leave Game";
-            }
+                GameObject.Find("AudioSource").GetComponent<AudioSource>().volume = 0.2f;
+            }        
+            restartMissionButtonRef.SetActive(false);
+            leaveMissionButtonRef.GetComponentInChildren<Text>().text = "Leave Game";
+        }
     }
 
-    public override void ControlledUpdate() // to check if in the game or if its already pasued when escape is pressed
+    public override void ControlledUpdate() // To check if in the game or if its already pasued when escape is pressed
     {
         if (!APP.IsReady)
         {
@@ -169,24 +168,23 @@ public class PauseMenu : SystemBase
             return;
         }
 
-        if (APP.PlayerTankManager.isArcade) // checking if it is aracde mode
+        if (APP.PlayerTankManager.isArcade) // Checking if it is aracde mode
         {
-            if (Input.GetKeyDown(KeyCode.Escape)) // will either return to game if game has already been paused or will pause game 
+            if (Input.GetKeyDown(KeyCode.Escape)) // Will either return to game if game has already been paused or will pause game 
             {
-                if (myCanvas.enabled == false && !ArcadeController.instance.playerDead && !UIManager.instance.hasWon) // to pause game
+                if (myCanvas.enabled == false && !ArcadeController.instance.playerDead && !UIManager.instance.hasWon) // To pause the game
                 {
                     PauseButton();
                 }
-                else if(myCanvas.enabled == true && !ArcadeController.instance.playerDead) // to return to game
+                else if(myCanvas.enabled == true && !ArcadeController.instance.playerDead) // To return to the game
                 {
                     ReturnToGame();
                 }
             }
         }
-
         else
         {
-            if (Input.GetKeyDown(KeyCode.Escape))
+            if (Input.GetKeyDown(KeyCode.Escape)) // Will either return to game if game has already been paused or will pause game 
             {
                 if (myCanvas.enabled == false)
                 {
@@ -200,9 +198,9 @@ public class PauseMenu : SystemBase
         }
     }
 
+    // The function that is called to display the chooserMenu which basically activates the menu where the player can select a tank and powerups, before the game starts
     public void ChooserMenu ()
-       {
-
+    {
         if (levelManagerRef.isArcadeMode) // checking if arcade mode has been selected by the LevelManagerRef
         {
             if (APP.PlayerTankManager._ArcadeMode == arcadeMode.defend || APP.PlayerTankManager._ArcadeMode == arcadeMode.SearchAndDestroy)
@@ -220,8 +218,8 @@ public class PauseMenu : SystemBase
                 loadingOverlay.SetActive(true);
                 SceneManager.LoadScene("ChooseDino");
             }
+            DEBUG.Log("Arcade mode has been selected");
         }
-
         else
         {
             loadingOverlay.SetActive(true);
@@ -231,23 +229,25 @@ public class PauseMenu : SystemBase
                 Debug.Log("Show Dino selection here");
             }
             else
+            {
                 SceneManager.LoadScene("ChooseDino");
+            }
         }
+    }
 
-       }
-    public void ReturnToMainMenu() // will returnn to main menu
+    public void ReturnToMainMenu() // Will returnn to main menu
     {
         Time.timeScale = 1;
         loadingOverlay.SetActive(true);
 
-        if (APP.IsConnected) // checking if the game is connected to a newtwork
+        if (APP.IsConnected) // Checking if the game is connected to a newtwork
         {
             if (PhotonNetwork.room != null)
             {
                 PhotonNetwork.LeaveRoom();
             }
         }
-        else if (APP.PlayerTankManager.isArcade) // checking which arcade game mode has been selected
+        else if (APP.PlayerTankManager.isArcade) // Checking which arcade game mode has been selected
         {
             if (APP.PlayerTankManager._ArcadeMode == arcadeMode.defend || APP.PlayerTankManager._ArcadeMode == arcadeMode.SearchAndDestroy)
             {
@@ -307,7 +307,6 @@ public class PauseMenu : SystemBase
                 {
                     PhotonNetwork.LeaveRoom();
                 }
-               
             }
             else
             {
@@ -319,9 +318,10 @@ public class PauseMenu : SystemBase
     private void GameWon() // will activate bool if game is won
     {
         gameWon = true;
+        DEBUG.Log("Player won");
     }
 
-    public void ReturnToGame() // will return to the game by chekcing if player is alive or not
+    public void ReturnToGame() // Will return to the game by chekcing if player is alive or not
     {
         if (PlayerTankmanager.GetPlayer() && PlayerTankmanager.GetPlayer().GetComponent<RTCTankController>().CheckAlive()) // checking if player is alive
         {
@@ -341,11 +341,9 @@ public class PauseMenu : SystemBase
             Cursor.visible = true;
             Cursor.lockState = CursorLockMode.None;
         }
-
-
-        // returinng to the game by disabling the Pause Menu's components
+        // Returinng to the game by disabling the Pause Menu's components
         GetComponent<Canvas>().enabled = false;
-        EventManager.TriggerEvent("GameUnPaused"); // triggering the event that will resume the game
+        EventManager.TriggerEvent("GameUnPaused"); // Triggering the event that will resume the game
         loadingOverlay.SetActive(false);
 
         Time.timeScale = 1;
@@ -356,7 +354,6 @@ public class PauseMenu : SystemBase
         {
             GameObject.Find("AudioSource").GetComponent<AudioSource>().volume = 1f; // changing the volume 
         }
-
         uiComponents.SetActive(true);
     }
 
@@ -364,40 +361,37 @@ public class PauseMenu : SystemBase
     public void ResetPlayerPosition() // will reset the player to postion to the ground, in case the player topples over or something.
     {
         LevelManager levelManagerRef = FindObjectOfType<LevelManager>(); // accessing the LevelManager
-
         if (levelManagerRef)
         {
             levelManagerRef.ResetPlayerPosition();
-           
         }
-
         ReturnToGame();
     }
 
-    public void RestartMissionButtonPressed() // will activate resartMissionPrompt
+    public void RestartMissionButtonPressed() // Will activate resartMissionPrompt
     {
         restartMissionPrompt.SetActive(true);
     }
 
-    public void LeaveMissionButtonPressed() // will activate LeaveMissionButtonPressed
+    public void LeaveMissionButtonPressed() // Will activate LeaveMissionButtonPressed
     {
         leaveMissionPrompt.SetActive(true);
     }
 
-    public void CloseRestartMissionPromptPressed() // will activate CloseRestartMissionPromptPressed
+    public void CloseRestartMissionPromptPressed() // Will activate CloseRestartMissionPromptPressed
     {
         restartMissionPrompt.SetActive(false);
     }
 
-    public void CloseLeaveMissionPromptPressed() // will activate CloseLeaveMissionPromptPressed
+    public void CloseLeaveMissionPromptPressed() // Will activate CloseLeaveMissionPromptPressed
     {
         leaveMissionPrompt.SetActive(false);
     }
 
-    public void RestartMission() // will restart the current mission/level name
+    public void RestartMission() // Will restart the current mission/level name
     {
         bool isArcade = PlayerTankmanager.GetLevelFromName(SceneManager.GetActiveScene().name).isArcade;
-        if (isArcade) // if current level is active, it will restart it
+        if (isArcade) // If current level is active, it will restart it
         {
             ArcadeController.instance.towerHealth.gameObject.SetActive(false);
             SceneManager.LoadScene(SceneManager.GetActiveScene().name);
@@ -416,12 +410,14 @@ public class PauseMenu : SystemBase
     public void ResetplayerPrefs()
     {
         APP.PlayerTankManager.ResetPlayerPrefs();
+        DEBUG.Log("Player prefs are being reset");
     }
 
     public void ResetLevelProgress()
     {
         PlayerPrefs.SetInt(SceneManager.GetActiveScene().name + "_checkpoint", 0);
         PlayerPrefs.Save();
+        DEBUG.Log("Player progress has been saved from the last checkpoint");
     }
 
     public void SetKeyboard()

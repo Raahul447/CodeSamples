@@ -53,6 +53,7 @@ public class KillIfOutOfBounds : MonoBehaviour
             timeLeft = 0;
             outOfBounds = true;
             player = other.GetComponentInParent<RTCTankController>(); // grabbing the RTCTankController script from the player Tank
+            DEBUG.Log("Player is now out of bounds");
         }
     }
 
@@ -62,6 +63,7 @@ public class KillIfOutOfBounds : MonoBehaviour
         {
             outOfBounds = false;
             timeLeft = 0;
+            DEBUG.Log("Player is back in the game");
         }
     }
 }

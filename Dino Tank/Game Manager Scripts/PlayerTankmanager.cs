@@ -1,4 +1,16 @@
-﻿
+﻿/*  
+    ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
+    ╔═════════════════════════════╡  DinoTank  ╞══════════════════════════════════════════════════════╗            
+    ║ Authors:  Rahul Yerramneedi                       Email:    yr020409@gmail.com                  ║
+    ╟─────────────────────────────────────────────────────────────────────────────────────────────────╢ 
+    ║ Purpose: This script is used to manage all the necessary values and variables for the player's  ║
+    ║          tank to function. It adds all the damage values, calculates the fuel and all the       ║
+    ║          collectibles that the player can collect as well.                                      ║
+    ╟─────────────────────────────────────────────────────────────────────────────────────────────────╢ 
+    ║ Usage: The PTM prefab should have this script with all its components intact.                   ║                             
+    ╚═════════════════════════════════════════════════════════════════════════════════════════════════╝
+    ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
+*/
 
 using System;
 using System.Linq;
@@ -27,6 +39,7 @@ public class PlayerTankmanager : SystemBase
 
     // Singleton
     private static PlayerTankmanager Inst; // Main Instance
+
     public static PlayerTankmanager instance
     {
         get
@@ -70,7 +83,7 @@ public class PlayerTankmanager : SystemBase
     public float deathmatchTime = 180;
     public int spawnpointIndex;
 
-    // Tank Values
+    // Game Currency and Progression Values
     [SerializeField]
     public bool allowWASDControl = true;
     [Header("Player Resources")]
@@ -98,11 +111,11 @@ public class PlayerTankmanager : SystemBase
     public List<tank> m_unlockedTanks = new List<tank>();
     [Space]
 
-    // used in editor for persistance
+    // Used in editor for persistance
     [SerializeField]
     public tank selectedTank;
 
-    // Tank Related to Show
+    // Displaying the info using the editor
     [SerializeField]
     public int showCosts;
     [SerializeField]
@@ -140,7 +153,7 @@ public class PlayerTankmanager : SystemBase
     [Header("Level Configuration")]
 	public List<Level> m_Levels = new List<Level>(); // List of actual levels for the system
 
-    public int m_Levelindex = 0; // This is the level number in the eaary that has been coded in
+    public int m_Levelindex = 0; // This is the level number which will show the selected level
     public int m_pointIndex = 0; // This is the last level selector point that was selected
     public bool continuePressed = false; // Used for the MM continue button in order to return to previously played level
 
@@ -153,18 +166,8 @@ public class PlayerTankmanager : SystemBase
     public bool loadUnlockedFromSaved = true;
 
     [Header("Technicals")]
-    //public int numUnlockedLevels = 1;
     public bool returningFromComplete = false;
     public bool showHelpBoxes = true;
-
-    [Header("Loyalty Rewards Setup")]
-    public int m_unlockedPrizes;
-    public int m_prizeSlot1;
-    public int m_prizeSlot2;
-    public int m_prizeSlot3;
-    public int m_prizeSlot4;
-    public int m_prizeSlot5;
-
 
     #region 
     public int usedMeteoriteToRevive;
@@ -185,7 +188,7 @@ public class PlayerTankmanager : SystemBase
     [SerializeField]
     public int BLUETeamTotalScoresVal; // Team Scores
     [SerializeField]
-    public int REDTeamTotalScoresVal; // team Scores
+    public int REDTeamTotalScoresVal; // Team Scores
     [SerializeField]
     public List<GameObject> redLabels = new List<GameObject>();
     [SerializeField]
@@ -262,7 +265,6 @@ public class PlayerTankmanager : SystemBase
     
     #endregion
 
-
     public static GameObject GetPlayer()
     {
         return instance.player;
@@ -279,6 +281,7 @@ public class PlayerTankmanager : SystemBase
         m_xp_Total += _xp;
     }
 
+    // Loading all the values from the unity player prefs, regarding all the multiplayer, single player stats and loodouts
     public void LoadPlayerPrefs()
     {
         // Increasing the rounds in the match 
@@ -370,24 +373,13 @@ public class PlayerTankmanager : SystemBase
         }
 
         // unlocked levels
-        // if (PlayerPrefs.HasKey("numUnlockedLevels")) numUnlockedLevels = PlayerPrefs.GetInt("numUnlockedLevels"); else PlayerPrefs.SetInt("numUnlockedLevels", numUnlockedLevels);
         if (PlayerPrefs.HasKey("laststackIndex")) laststackIndex = PlayerPrefs.GetInt("laststackIndex"); else PlayerPrefs.SetInt("laststackIndex", laststackIndex);
         if (PlayerPrefs.HasKey("m_pointIndex")) m_pointIndex = PlayerPrefs.GetInt("m_pointIndex"); else PlayerPrefs.SetInt("m_pointIndex", m_pointIndex);
         if (PlayerPrefs.HasKey("lastLevelName")) lastLevelName = PlayerPrefs.GetString("lastLevelName"); else PlayerPrefs.SetString("lastLevelName", lastLevelName);
 
         // tutorial 
         if (PlayerPrefs.HasKey("viewedTutorial")) viewedTutorial = PlayerPrefs.GetInt("viewedTutorial", 0); else PlayerPrefs.SetInt("viewedTutorial", viewedTutorial);
-
-
-        if (PlayerPrefs.HasKey("m_curDay")) m_curDay = PlayerPrefs.GetInt("m_curDay", m_curDay); else PlayerPrefs.SetInt("m_curDay", m_curDay);
-       
-        //Prize slots
-        if (PlayerPrefs.HasKey("UnlockedPrizes")) m_unlockedPrizes = PlayerPrefs.GetInt("UnlockedPrizes", m_unlockedPrizes);
-        if (PlayerPrefs.HasKey("prizeBox1")) m_prizeSlot1 = PlayerPrefs.GetInt("prizeBox1", m_prizeSlot1);
-        if (PlayerPrefs.HasKey("prizeBox2")) m_prizeSlot2 = PlayerPrefs.GetInt("prizeBox2", m_prizeSlot2);
-        if (PlayerPrefs.HasKey("prizeBox3")) m_prizeSlot3 = PlayerPrefs.GetInt("prizeBox3", m_prizeSlot3);
-        if (PlayerPrefs.HasKey("prizeBox4")) m_prizeSlot4 = PlayerPrefs.GetInt("prizeBox4", m_prizeSlot4);
-        if (PlayerPrefs.HasKey("prizeBox5")) m_prizeSlot5 = PlayerPrefs.GetInt("prizeBox5", m_prizeSlot5);     
+        if (PlayerPrefs.HasKey("m_curDay")) m_curDay = PlayerPrefs.GetInt("m_curDay", m_curDay); else PlayerPrefs.SetInt("m_curDay", m_curDay); 
 
         // check for unlocked levels
         if (loadUnlockedFromSaved)
@@ -435,6 +427,7 @@ public class PlayerTankmanager : SystemBase
         }
     }
 
+    // Ading the collectibles to the players loadout (Currency, Ammo, Fuel)
     public void AddCollectedItem(collectableTypes _type, int _qty, Collect _colletRef)
     {
         switch (_type)
@@ -447,7 +440,6 @@ public class PlayerTankmanager : SystemBase
                 {
                     player.GetComponent<RTCTankController>().CurrentFuel = player.GetComponent<RTCTankController>().maxFuel;
                 }
-                //loadoutsFull = false;
                 break;
             case collectableTypes.FuelTankBig:
                 player.GetComponent<RTCTankController>().CurrentFuel += _qty;
@@ -455,7 +447,6 @@ public class PlayerTankmanager : SystemBase
                 {
                     player.GetComponent<RTCTankController>().CurrentFuel = player.GetComponent<RTCTankController>().maxFuel;
                 }
-                //loadoutsFull = false;
                 break;
             case collectableTypes.FuelObj:
                 player.GetComponent<RTCTankController>().CurrentFuel += _qty;
@@ -463,7 +454,6 @@ public class PlayerTankmanager : SystemBase
                 {
                     player.GetComponent<RTCTankController>().CurrentFuel = player.GetComponent<RTCTankController>().maxFuel;
                 }
-                //loadoutsFull = false;
                 break;
             case collectableTypes.Heal:
                 if (player)
@@ -474,15 +464,12 @@ public class PlayerTankmanager : SystemBase
                         player.GetComponent<RTCTankController>().SetLife(player.GetComponent<RTCTankController>().MaxLife);
                      }
                 }
-                //loadoutsFull = false;
                 break;
             default:
                 // we do this if we are adding a weapon that already has a prefab in Resources and we need to add it
                 FindOrAddWepon(_type.ToString(), _qty);
                 break;
         }
-        //UIManager.instance.GenerateAdditionIcon(_type, _qty, _colletRef);
-
         SavePlayerPrefs();
         EventManager.TriggerEvent("RefreshLoadout");
     }
@@ -506,7 +493,7 @@ public class PlayerTankmanager : SystemBase
             return;
         }
 
-        // cap QTY and save
+        // Max QTY for weapons and save
         int currentQty = GetWeaponQuantity(_weaponName);
         int qtyCap = weapon.GetComponent<WeaponIcon>().ammoCap;
 
@@ -987,9 +974,9 @@ public class PlayerTankmanager : SystemBase
         if (PlayerPrefs.HasKey("prizeBox4")) PlayerPrefs.SetInt("prizeBox4", m_prizeSlot4);
         if (PlayerPrefs.HasKey("prizeBox5")) PlayerPrefs.SetInt("prizeBox5", m_prizeSlot5);
         PlayerPrefs.Save();  
-    }
+    } // like the save pref
 
-    // Resetting player tanks values
+    // Resetting the player's loadouts, currency, multiplayer and single player stats
     public void ResetPlayerPrefs()
     {
         m_xp = 0;
@@ -1017,18 +1004,15 @@ public class PlayerTankmanager : SystemBase
             PlayerPrefs.SetInt(((tank)i).ToString() + "_SPD", 0 );
         }
 
-      
         m_unlockedSlots = 5;
         slotContents1 = "RTCBullet";
         slotContents2 = "";
         slotContents3 = "";
         slotContents4 = "";
         slotContents5 = "";
-
         lastLevelName = "";
         m_pointIndex = 0;
         laststackIndex = 0;
-
         viewedTutorial = 0;
 
         for (int i = 0; i < m_Weapons.Count; i++)
@@ -1047,9 +1031,6 @@ public class PlayerTankmanager : SystemBase
         }
 
         m_unlockedTanks.Clear();
-
-    
-
         SavePlayerPrefs();
     }
  
@@ -1067,7 +1048,7 @@ public class PlayerTankmanager : SystemBase
         CheckForGameEnd();
     }
 
-    // Adding checkpoint for level
+    // Saving the player's progress after they hit a checkpoint 
     public void AddCheckPointForLevel(string _levelName, int checkpointIndex)
     {
         if(_levelName.Contains("_checkpoint"))
@@ -1081,7 +1062,7 @@ public class PlayerTankmanager : SystemBase
         PlayerPrefs.Save();
     }
 
-    // Get last checkpoint in level
+    // Load the player's last checkpoint for the paritcular level
     public int GetLastCheckpoint(string _levelName)
     {
         int lastCheckpointValue = 0;
@@ -1094,11 +1075,6 @@ public class PlayerTankmanager : SystemBase
         {
             return 0;
         }
-    }
-
-    void CheckForGameEnd()
-    {
-            Debug.Log("TODO!!!!! Write implementation for level complete ");
     }
 
     /// This is needed for sorting equipments that are not clickable to the end of the UI display
@@ -1125,35 +1101,6 @@ public class PlayerTankmanager : SystemBase
         }
     }
 
-    public List<GameObject> GetAllTanksOfTier(tiers _tier, bool _onlyUnlocked = false)
-    {
-        //New list of game objects
-        List<GameObject> newList = new List<GameObject>();
-
-        //For loop through m_tanks.count
-        for (int i = 0; i < m_Tanks.Count; i++)
-        {
-            //If only unlocked = true
-            if (!_onlyUnlocked)
-            {
-                //If tank tier is equal to what we want
-                if (m_Tanks[i].GetComponent<RTCTankController>().tier == _tier)
-                {
-                    //Add that tank
-                    newList.Add(m_Tanks[i]);
-                }
-            }
-            else
-            {
-                if (m_Tanks[i].GetComponent<RTCTankController>().tier == _tier && m_Tanks[i].GetComponent<RTCTankController>().availableToPlayer)
-                {
-                    newList.Add(m_Tanks[i]);
-                }
-            }
-        }
-        return newList;
-    }
-
     // Get current level number from the current scene using its index
     public static int GetLevelIndexFromName(string _name)
     {
@@ -1165,21 +1112,7 @@ public class PlayerTankmanager : SystemBase
         return 0;
     }
 
-    public static bool IsInBattleLevel()
-    {
-        string currentScene = SceneManager.GetActiveScene().name;
-        Level level = GetLevelFromName(currentScene);
-        if (level != null)
-        {
-            return level.gameLevel;
-        }
-        else
-        {
-            DEBUG.Log(currentScene + " level is not listed in PTM levels container, add it", Warning_Types.Warning);
-            return false;
-        }
-    }
-
+    // Gets the icon sprites from the prefab and implements it in game
     public static Sprite GetIconFromDino(dino _dino, bool getSilhette = false)
     {
         for (int i = 0; i < instance.m_DinoEffects.Count; i++)
@@ -1195,6 +1128,7 @@ public class PlayerTankmanager : SystemBase
         return null;
     }
 
+    // Loading the stats for the dinos
     public static DinoEffectsContainer GetEffectFromDino(dino _dino)
     {
         foreach (DinoEffectsContainer item in instance.m_DinoEffects)
@@ -1204,6 +1138,7 @@ public class PlayerTankmanager : SystemBase
         return null;
     }
 
+    // Get current equipment badge name using its index
     public static GameObject GetEquipmentBadgeFromName(string _name)
     {
         for (int i = 0; i < instance.m_EquipmentAll.Count; i++)
@@ -1214,41 +1149,17 @@ public class PlayerTankmanager : SystemBase
         return null;
     }
 
-    // Applying all the effects to the tanks
+    // Applying all the stat modifiers to the tanks
     public void ApplyEffects()
     {
-        
         player.GetComponent<RTCTankController>().GetComponent<Rigidbody>().mass += this.m_DinoEffects[(int)SelectedDino].delataMass; // delataMass;
-        player.GetComponent<RTCTankController>().SetMaxLife(player.GetComponent<RTCTankController>().MaxLife + this.m_DinoEffects[(int)SelectedDino].delataMaxLife);  //delataMaxLife);
+        player.GetComponent<RTCTankController>().SetMaxLife(player.GetComponent<RTCTankController>().MaxLife + this.m_DinoEffects[(int)SelectedDino].delataMaxLife);  //delataMaxLife
         player.GetComponent<RTCTankController>().SetLife(player.GetComponent<RTCTankController>().MaxLife + this.m_DinoEffects[(int)SelectedDino].delataMaxLife);
         player.GetComponent<RTCTankController>().EngineTorque += this.m_DinoEffects[(int)SelectedDino].delataEngineTorque;
         player.GetComponent<RTCTankController>().engineRPM += this.m_DinoEffects[(int)SelectedDino].delataMaxRPM;
         player.GetComponent<RTCTankController>().SetMaxSpeed(player.GetComponent<RTCTankController>().speed + (this.m_DinoEffects[(int)SelectedDino].delataMaxSpeed * player.GetComponent<RTCTankController>().speed));
         player.GetComponent<RTCTankController>().maximumAngularVelocity += this.m_DinoEffects[(int)SelectedDino].delataAngularVelovity;
     }
-}
-
-[System.Serializable]
-public class Level
-{  
-    public bool gameLevel = false;
-    public string levelName = "none";
-    public string displayName = "";
-	public string levelInfo = "Description here.";
-    public bool isMultiplayer = false;
-    public bool isLocked = false;
-    public bool isArcade = false;
-    public bool isSinglePlayer = false;
-    public Sprite icon;
-}
-
-[System.Serializable]
-public class UnlockTimeContainer
-{   
-   // Time related variables
-   public int hours = 0;
-   public int minutes = 0;
-   public int seconds = 30;
 }
 
 [System.Serializable]

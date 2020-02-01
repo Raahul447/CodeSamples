@@ -20,12 +20,14 @@ using UnityEngine;
 
 public class InGameMessages : MonoBehaviour {
 
+    // This contains all the message box related details like names and texts
     [Header("Strings")]
     public string ParentName;
     public string ScrollName;
     private string[] deckText;
     private string[] instantiateChangeTexts;
 
+    // This contains all the gamobjects that the messages are present in or instantiate in as
     [Header("GameObjects")]
     private GameObject[] deck;
     private GameObject[] instantiatedObjects;
@@ -33,6 +35,7 @@ public class InGameMessages : MonoBehaviour {
     public GameObject TheScroll;
     public GameObject mssg;
 
+    // Varibales being used to count the texts and times
     [Header("Variables")]
     public int textCounter = 0;
     public float timermessage;
@@ -56,6 +59,7 @@ public class InGameMessages : MonoBehaviour {
         Canvas.ForceUpdateCanvases();
     }
 
+    // This fucntion will grab all the necessary details from teh gamobjects and start updating the canvas
     public void StartChat()
     {
         mssg = GameObject.Find(ParentName); // Getting the gameobject parent's name
